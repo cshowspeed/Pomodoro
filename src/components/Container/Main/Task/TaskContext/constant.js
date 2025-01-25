@@ -1,4 +1,0 @@
-export const TO_ADD_TASK_INPUT = 'TO_ADD_TASK_INPUT'
-export const TO_ADD_TASK = 'TO_ADD_TASK'
-export const TO_MODIFY_TASK = 'TO_MODIFY_TASK'
-export const TO_DELETE_TASK = 'TO_DELETE_TASK'
