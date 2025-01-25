@@ -203,11 +203,11 @@ function getUserPreferences() {
   } else {
     // otherwise, set preference default values
     const defaultPreferences = {
-      theme: '#f87070',
+      theme: '#70f3f8',
       font: 'Kumbh Sans, sans-serif',
       pomodoroTime: 1500,
       shortBreakTime: 300,
-      longBreakTime: 600,
+      longBreakTime: 1200,
     };
     localStorage.setItem('userPreferences', JSON.stringify(defaultPreferences));
     // get the default settings from local storage
