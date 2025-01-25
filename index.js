@@ -203,7 +203,7 @@ function getUserPreferences() {
   } else {
     // otherwise, set preference default values
     const defaultPreferences = {
-      theme: '#70f3f8',
+      theme: '#f87070',
       font: 'Kumbh Sans, sans-serif',
       pomodoroTime: 1500,
       shortBreakTime: 300,
