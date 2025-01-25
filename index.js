@@ -207,7 +207,7 @@ function getUserPreferences() {
       font: 'Kumbh Sans, sans-serif',
       pomodoroTime: 1500,
       shortBreakTime: 300,
-      longBreakTime: 1200,
+      longBreakTime: 900,
     };
     localStorage.setItem('userPreferences', JSON.stringify(defaultPreferences));
     // get the default settings from local storage
