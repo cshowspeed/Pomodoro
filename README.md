@@ -4,4 +4,4 @@ Inspired by joelynn94.github.io/pomodoro/ & pomofocus.io
 
 Created by DeepSeek R1 AI Model on January 26, 2025
 
-![ScreenShot](main/screenshot.png)
+![Demo Image](screenshot.png)
