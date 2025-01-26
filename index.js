@@ -364,41 +364,43 @@ settingsForm.addEventListener('submit', (e) => {
   }
 });
 
-// 获取音频文件
+// index.js
+
+// 1. 获取音频文件
 const alarm = new Audio('./assets/alarm-digital.mp3');
 
-// 获取计时器按钮
+// 2. 获取计时器按钮
 const pomodoroButton = document.getElementById('pomodoro');
 const shortBreakButton = document.getElementById('short-break');
 const longBreakButton = document.getElementById('long-break');
 
-// 获取计时器显示
+// 3. 获取计时器显示
 const timerDisplay = document.getElementById('timer__time-left');
 const endTimeDisplay = document.getElementById('end-time');
 
-// 默认计时设置 (单位为分钟)
+// 4. 默认计时设置 (单位为分钟)
 let pomodoroTime = 25 * 60; // 25 分钟
 let shortBreakTime = 5 * 60; // 5 分钟
 let longBreakTime = 15 * 60; // 15 分钟
 
-// 记录当前计时状态
+// 5. 记录当前计时状态
 let currentTime = pomodoroTime;
 let interval;
 let isRunning = false;
 
-// 更新计时显示
+// 6. 更新计时显示
 function updateTimerDisplay() {
   const minutes = Math.floor(currentTime / 60);
   const seconds = currentTime % 60;
   timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 }
 
-// 播放音频
+// 7. 播放音频
 function playAlarm() {
   alarm.play();
 }
 
-// 计时器开始/停止
+// 8. 计时器开始/停止
 function startStopTimer() {
   if (isRunning) {
     clearInterval(interval);
@@ -419,7 +421,7 @@ function startStopTimer() {
   }
 }
 
-// 设置计时器时间
+// 9. 设置计时器时间
 function setPomodoro() {
   currentTime = pomodoroTime;
   updateTimerDisplay();
@@ -438,7 +440,7 @@ function setLongBreak() {
   endTimeDisplay.textContent = '';
 }
 
-// 事件监听器
+// 10. 事件监听器
 pomodoroButton.addEventListener('click', () => {
   setPomodoro();
   startStopTimer();
@@ -453,3 +455,4 @@ longBreakButton.addEventListener('click', () => {
   setLongBreak();
   startStopTimer();
 });
+
