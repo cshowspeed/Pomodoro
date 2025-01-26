@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="icon-32x32.ico" type="image/x-icon">
+    <title>Pomodoro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .timer {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        .controls {
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .input-time {
+            width: 80px;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .status {
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+        .round-display {
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pomodoro</h1>
+
+    <div class="controls">
+        <label for="pomodoro">Stay Focused (mins):</label>
+        <input type="number" id="pomodoro" class="input-time" value="25" min="1">
+        
+        <label for="shortBreak">Short Break (mins):</label>
+        <input type="number" id="shortBreak" class="input-time" value="5" min="1">
+        
+        <label for="longBreak">Long Break (mins):</label>
+        <input type="number" id="longBreak" class="input-time" value="15" min="1">
+        
+        <label for="rounds">Session Rounds:</label>
+        <input type="number" id="rounds" class="input-time" value="4" min="1">
+    </div>
+
+    <div class="timer" id="timerDisplay">25:00</div>
+    <div class="status" id="statusDisplay">Ready to Focus</div>
+    <div class="round-display" id="roundDisplay">Session 1/4</div>
+
+    <button class="button" id="startButton">Start</button>
+    <button class="button" id="stopButton" disabled>Reset</button>
+
+    <audio id="alarm" src="alarm-digital.mp3"></audio>
+
+    <script>
+        let targetTime = 0;
+        let currentPhase = 'ready';
+        let completedSessions = 0;
+        let totalRounds = 4;
+        let timerInterval = null;
+
+        // DOM Elements
+        const timerDisplay = document.getElementById('timerDisplay');
+        const statusDisplay = document.getElementById('statusDisplay');
+        const roundDisplay = document.getElementById('roundDisplay');
+        const alarm = document.getElementById('alarm');
+
+        // Configuration Inputs
+        const focusInput = document.getElementById('pomodoro');
+        const shortBreakInput = document.getElementById('shortBreak');
+        const longBreakInput = document.getElementById('longBreak');
+        const roundsInput = document.getElementById('rounds');
+
+        // Buttons
+        const startBtn = document.getElementById('startButton');
+        const stopBtn = document.getElementById('stopButton');
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const secs = (seconds % 60).toString().padStart(2, '0');
+            return `${mins}:${secs}`;
+        }
+
+        function updateDisplay(seconds) {
+            timerDisplay.textContent = formatTime(seconds);
+        }
+
+        function calculateInitialTime() {
+            switch(currentPhase) {
+                case 'focus': return parseInt(focusInput.value) * 60;
+                case 'shortBreak': return parseInt(shortBreakInput.value) * 60;
+                case 'longBreak': return parseInt(longBreakInput.value) * 60;
+                default: return parseInt(focusInput.value) * 60;
+            }
+        }
+
+        function startPhase() {
+            const initialTime = calculateInitialTime();
+            targetTime = Date.now() + initialTime * 1000;
+            
+            timerInterval = setInterval(() => {
+                const remaining = Math.max(0, Math.round((targetTime - Date.now()) / 1000));
+                updateDisplay(remaining);
+
+                if (remaining <= 0) {
+                    handlePhaseEnd();
+                }
+            }, 200);
+        }
+
+        function handlePhaseEnd() {
+            clearInterval(timerInterval);
+            alarm.play();
+
+            switch(currentPhase) {
+                case 'focus':
+                    completedSessions++;
+                    if (completedSessions >= totalRounds) {
+                        switchPhase('longBreak');
+                    } else {
+                        switchPhase('shortBreak');
+                    }
+                    break;
+                    
+                case 'shortBreak':
+                    switchPhase('focus');
+                    break;
+                    
+                case 'longBreak':
+                    resetTimer(true);
+                    break;
+            }
+        }
+
+        function switchPhase(newPhase) {
+            currentPhase = newPhase;
+            
+            // Update status display
+            switch(newPhase) {
+                case 'focus':
+                    statusDisplay.textContent = 'Stay Focused';
+                    roundDisplay.textContent = `Session ${completedSessions + 1}/${totalRounds}`;
+                    break;
+                case 'shortBreak':
+                    statusDisplay.textContent = 'Short Break';
+                    break;
+                case 'longBreak':
+                    statusDisplay.textContent = 'Long Break';
+                    roundDisplay.textContent = 'Completed';
+                    break;
+                case 'ready':
+                    statusDisplay.textContent = 'Ready to Focus';
+                    roundDisplay.textContent = `Session ${completedSessions + 1}/${totalRounds}`;
+                    break;
+            }
+
+            if (newPhase !== 'ready') {
+                startPhase();
+            }
+        }
+
+        function resetTimer(complete = false) {
+            clearInterval(timerInterval);
+            currentPhase = 'ready';
+            completedSessions = 0;
+            updateDisplay(parseInt(focusInput.value) * 60);
+            statusDisplay.textContent = 'Ready to Focus';
+            roundDisplay.textContent = `Session 1/${totalRounds}`;
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            
+            if (complete) {
+                alarm.play();
+                setTimeout(() => alarm.pause(), 2000);
+            }
+        }
+
+        // Event Listeners
+        startBtn.addEventListener('click', () => {
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            if (currentPhase === 'ready') {
+                switchPhase('focus');
+            }
+        });
+
+        stopBtn.addEventListener('click', () => resetTimer());
+
+        focusInput.addEventListener('change', () => {
+            if (currentPhase === 'focus') {
+                targetTime = Date.now() + parseInt(focusInput.value) * 60 * 1000;
+            }
+        });
+
+        shortBreakInput.addEventListener('change', () => {
+            if (currentPhase === 'shortBreak') {
+                targetTime = Date.now() + parseInt(shortBreakInput.value) * 60 * 1000;
+            }
+        });
+
+        longBreakInput.addEventListener('change', () => {
+            if (currentPhase === 'longBreak') {
+                targetTime = Date.now() + parseInt(longBreakInput.value) * 60 * 1000;
+            }
+        });
+
+        roundsInput.addEventListener('change', () => {
+            totalRounds = parseInt(roundsInput.value);
+            roundDisplay.textContent = `Session ${completedSessions + 1}/${totalRounds}`;
+        });
+
+        // Initialize
+        updateDisplay(parseInt(focusInput.value) * 60);
+    </script>
+</body>
+</html>
