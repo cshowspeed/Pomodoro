@@ -69,14 +69,20 @@
     <button class="button" id="startButton">Start</button>
     <button class="button" id="stopButton" disabled>Reset</button>
 
-    <audio id="alarm" src="alarm.aac"></audio>
+    <!-- Audio element with multiple formats for cross-browser compatibility -->
+    <audio id="alarm" preload="auto">
+        <source src="alarm.mp3" type="audio/mpeg">
+        <source src="alarm.ogg" type="audio/ogg">
+        <source src="alarm.aac" type="audio/aac">
+    </audio>
 
     <script>
-        let targetTime = 0;
-        let currentPhase = 'ready';
-        let completedSessions = 0;
-        let totalRounds = 4;
-        let timerInterval = null;
+        // Global variables
+        let targetTime = 0; // Target time for the countdown
+        let currentPhase = 'ready'; // Current phase: 'focus', 'shortBreak', 'longBreak', or 'ready'
+        let completedSessions = 0; // Number of completed focus sessions
+        let totalRounds = 4; // Total number of focus rounds before a long break
+        let timerInterval = null; // Interval for the countdown timer
 
         // DOM Elements
         const timerDisplay = document.getElementById('timerDisplay');
@@ -94,16 +100,31 @@
         const startBtn = document.getElementById('startButton');
         const stopBtn = document.getElementById('stopButton');
 
+        // Initialize audio (required for iOS to allow playback)
+        function initAudio() {
+            alarm.volume = 0.5; // Set volume (optional)
+            alarm.play().then(() => {
+                // Immediately pause and reset the audio to ensure it can play later
+                alarm.pause();
+                alarm.currentTime = 0;
+            }).catch((error) => {
+                console.error('Audio initialization failed:', error);
+            });
+        }
+
+        // Format time in MM:SS format
         function formatTime(seconds) {
             const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
             const secs = (seconds % 60).toString().padStart(2, '0');
             return `${mins}:${secs}`;
         }
 
+        // Update the timer display
         function updateDisplay(seconds) {
             timerDisplay.textContent = formatTime(seconds);
         }
 
+        // Calculate initial time based on the current phase
         function calculateInitialTime() {
             switch(currentPhase) {
                 case 'focus': return parseInt(focusInput.value) * 60;
@@ -113,6 +134,7 @@
             }
         }
 
+        // Start the current phase (focus, short break, or long break)
         function startPhase() {
             const initialTime = calculateInitialTime();
             targetTime = Date.now() + initialTime * 1000;
@@ -127,9 +149,14 @@
             }, 200);
         }
 
+        // Handle the end of a phase (play sound and switch to the next phase)
         function handlePhaseEnd() {
             clearInterval(timerInterval);
-            alarm.play();
+
+            // Play the alarm sound
+            alarm.play().catch((error) => {
+                console.error('Failed to play alarm:', error);
+            });
 
             switch(currentPhase) {
                 case 'focus':
@@ -151,10 +178,11 @@
             }
         }
 
+        // Switch to a new phase and update the UI
         function switchPhase(newPhase) {
             currentPhase = newPhase;
             
-            // Update status display
+            // Update status display based on the new phase
             switch(newPhase) {
                 case 'focus':
                     statusDisplay.textContent = 'Stay Focused';
@@ -178,6 +206,7 @@
             }
         }
 
+        // Reset the timer (optionally play a completion sound)
         function resetTimer(complete = false) {
             clearInterval(timerInterval);
             currentPhase = 'ready';
@@ -189,13 +218,17 @@
             stopBtn.disabled = true;
             
             if (complete) {
-                alarm.play();
+                // Play the alarm sound
+                alarm.play().catch((error) => {
+                    console.error('Failed to play alarm:', error);
+                });
                 setTimeout(() => alarm.pause(), 2000);
             }
         }
 
         // Event Listeners
         startBtn.addEventListener('click', () => {
+            initAudio(); // Initialize audio for iOS
             startBtn.disabled = true;
             stopBtn.disabled = false;
             if (currentPhase === 'ready') {
@@ -228,7 +261,7 @@
             roundDisplay.textContent = `Session ${completedSessions + 1}/${totalRounds}`;
         });
 
-        // Initialize
+        // Initialize the timer display
         updateDisplay(parseInt(focusInput.value) * 60);
     </script>
 </body>
