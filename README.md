@@ -1,1 +1,3 @@
-# Pomodoro Timer inspired by joelynn94.github.io/pomodoro/ and pomofocus.io
+# Pomodoro Timer 
+
+Inspired by joelynn94.github.io/pomodoro/ & pomofocus.io
